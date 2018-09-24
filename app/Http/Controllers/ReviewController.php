@@ -4,17 +4,27 @@ namespace App\Http\Controllers;
 
 use App\Model\Review;
 use Illuminate\Http\Request;
+use League\Fractal\Manager;
+use League\Fractal\Resource\Collection;
+use App\transformers\ReviewTransformer;
 
 class ReviewController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    private $fractal;
+
+    private $reviewTransformer;
+    function __construct(Manager $fractal, ReviewTransformer $reviewTransformer)
+    {
+        $this->fractal = $fractal;
+        $this->reviewTransformer = $reviewTransformer;
+    }
+
     public function index()
     {
-        //
+      $review = Review::all();
+      $review = new Collection($review, $this->reviewTransformer);
+      $review = $this->fractal->createData($review);
+      return $review->toArray();
     }
 
     /**

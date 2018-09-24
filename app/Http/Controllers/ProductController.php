@@ -4,17 +4,46 @@ namespace App\Http\Controllers;
 
 use App\Model\Product;
 use Illuminate\Http\Request;
+use League\Fractal\Manager;
+use League\Fractal\Resource\Collection;
+use App\transformers\ProductTransformer;
+// use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+// use Illuminate\Support\Collection as IlluminateCollection;
+//use League\Fractal\Pagination\IlluminatePaginatorAdapter;
 
 class ProductController extends Controller
 {
+    /**
+     * @var Manager
+     */
+    private $fractal;
+
+    /**
+     * @var UserTransformer
+     */
+    private $productTransformer;
+    function __construct(Manager $fractal, ProductTransformer $productTransformer)
+    {
+        $this->fractal = $fractal;
+        $this->productTransformer = $productTransformer;
+    }
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $product = Product::all();
+        $product = new Collection($product, $this->productTransformer);
+        $product = $this->fractal->createData($product);
+        return $product->toArray();
+
+        // $productPage = Product::paginate(4);
+        // $productPage = new Collection($productPage->items(), $this->productTransformer);
+        // $productPage->setPaginator(new IlluminatePaginatorAdapter($productPage));
+        // $productPage = $this->fractal->createData($product);
+        // return $productPage->toArray();
     }
 
     /**
